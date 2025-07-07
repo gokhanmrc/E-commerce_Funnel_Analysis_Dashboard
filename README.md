@@ -2,7 +2,7 @@
 
 ---
 
-## 1. 🎯 Testin Tanımı
+## 🎯 Testin Tanımı
 
 ### 🔍 Neyi Test Ediyoruz?
 Bu A/B testinde, mobil uygulama üzerindeki abonelik teklif ekranının kullanıcı dönüşüm oranları üzerindeki etkisini test ediyoruz.
@@ -15,26 +15,7 @@ Bu A/B testinde, mobil uygulama üzerindeki abonelik teklif ekranının kullanı
 - **Rastgele atama**: Kullanıcılar rastgele şekilde A ve B gruplarına atanmıştır.
 - **Ölçülen metrik**: Dönüşüm oranı (abone olan kullanıcı oranı)
 
-### 🔄 Gerçekleştirilen İşlev Değişikliği
-- Arayüzde sadece fiyat bilgisi değiştirilmiş; akış ve içerik aynı.
-
-### 📈 Akış Şeması (Metin Formatında)
-
-Uygulama Açıldı
-↓
-Abonelik Ekranı Gösterildi
-↓
-Kullanıcı Grubu Belirleme (A/B)
-↓
-A → $4.99 fiyat
-B → %50 indirim ($2.49)
-↓
-Kullanıcı Abone Oldu Mu?
-
-
----
-
-## 2. 🧠 Problem ve Amaç
+## 🧠 Problem ve Amaç
 
 ### 🤔 Problem
 Kullanıcıların abonelik ekranında yeterince dönüşüm sağlamaması, uygulama gelirlerini düşürmektedir.
@@ -60,32 +41,39 @@ Dönüşüm oranını artırmak için daha cazip bir fiyat (%50 indirim) sunarak
 - **Neden seçildi?**: Her iki değişken (grup ve dönüşüm) kategorik olduğu için uygun bir testtir.
 - **Python kodu**:
 ```python
-observed = pd.crosstab(df["test_group"], df["conversion"])
-statistic, pvalue, dof, expected = stats.chi2_contingency(observed)
+from scipy import stats
 
+alpha = 0.05
+
+observed = pd.crosstab(df["test_group"].values, df["conversion"].values)
+statistic, pvalue, dof, expected_values = stats.chi2_contingency(observed)
+
+print(f"chi2-statistic: {round(statistic, 2)}, p-value: {round(pvalue,2)}")
+
+if pvalue < alpha:
+    print("The difference is statistically significant, Null Hypothesis is rejected.")
+else:
+    print("The difference is insignificant, Null Hypothesis cannot be rejected.")
+```
 Test Sonucu:
-Chi-squared statistic: 56.14
-
-p-değeri: 0.0
+chi2-statistic: 56.14, p-value: 0.0
 
 Yorum: p < 0.05 olduğu için H₀ reddedilir. İki grup arasında istatistiksel olarak anlamlı bir fark vardır.
 
 5. 📊 Sonuçların Analizi
-Grup	Kullanıcı Sayısı	Dönüşüm Sayısı	Dönüşüm Oranı
-A	9.975	172	%1,72
-B	10.023	239	%2,38
+                             | Kullanıcı Sayısı	 | Dönüşüm Sayısı |	Dönüşüm Oranı
+Standart ekran (Grup A)      |	10013	           |	611	          |   6.10%     
+%50 indirimli ekran (Grup B) |	9985	           |	889           | 	8.90%    
 
 Grup B’nin dönüşüm oranı, Grup A’ya göre belirgin şekilde daha yüksektir.
 
 %50 indirimli teklif, kullanıcıların satın alma ihtimalini artırmaktadır.
 
-6. ✅ Sonuç ve Aksiyon Planı
+ Sonuç ve Aksiyon Planı
 ✔️ Olumlu Senaryo (p < 0.05 → H₀ reddedildi)
 Karar: %50 indirimli abonelik ekranı daha etkili.
 
 Aksiyon:
 
 Grup B'deki tasarım tüm kullanıcılara sunulmalı
-
-Uzun vadede kullanıcı başı gelir (LTV) izlenmeli
 
